@@ -5,11 +5,13 @@
 
 #include <raylib.h>
 
-#define WIDTH   800
-#define HEIGHT  600
-#define TITLE   "Minigame"
-#define FPS     60
-#define SPEED   20
+#define WIDTH       800
+#define HEIGHT      600
+#define TITLE       "Minigame"
+#define FPS         60
+#define SPEED       20
+#define P_WIDTH     10
+#define P_HEIGHT    100
 
 typedef struct {
     int x;
@@ -17,19 +19,19 @@ typedef struct {
     int w;
     int h;
     Color c;
-} Rect;
+} Player;
 
-static Rect *player = NULL;
+static Player *player = NULL;
 
-void create_character() {
+void create_player() {
     player = malloc(sizeof(*player));
     assert(player != NULL);
     memset(player, 0, sizeof(*player));
 
-    player->x = GetScreenWidth() / 2;
+    player->x = 0;
     player->y = GetScreenHeight() / 2;
-    player->w = 10;
-    player->h = 10;
+    player->w = P_WIDTH;
+    player->h = P_HEIGHT;
     player->c = RED;
 }
 
@@ -44,16 +46,21 @@ void player_movement() {
     if (IsKeyPressed(KEY_S) && player->y < HEIGHT) {
         player->y += SPEED;
     }
-    if (IsKeyPressed(KEY_D) && player->x < WIDTH) {
-        player->x += SPEED;
-    }
-    if (IsKeyPressed(KEY_A) && player->x > 0) {
-        player->x -= SPEED;
-    }
 }
 
-void update() {
+void draw_middle_divisor() {
+    DrawRectangle(
+            GetScreenWidth() / 2,
+            GetScreenHeight() / 2,
+            1,
+            HEIGHT - 10,
+            WHITE
+    );
+}
+
+void update_player() {
     draw_player();
+    draw_middle_divisor();
     player_movement();
 }
 
@@ -61,13 +68,13 @@ int main(void) {
     InitWindow(WIDTH, HEIGHT, TITLE);
     SetTargetFPS(FPS);
 
-    create_character();
+    create_player();
 
     while (!WindowShouldClose()) {
         BeginDrawing();
             ClearBackground(BLACK);
 
-            update();
+            update_player();
         EndDrawing();
     }
     CloseWindow();

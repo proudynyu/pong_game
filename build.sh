@@ -2,8 +2,12 @@
 
 FILE=main
 
-cc -I./raylib/include -o $FILE main.c -L./raylib/lib -l:libraylib.a -l:libraylib.a -lm
+if [[ ! -d "./bin" ]]; then
+    mkdir bin
+fi
 
-if [[ -f "$FILE" ]]; then
-    ./$FILE
+cc -I./raylib/include -o ./bin/$FILE main.c -L./raylib/lib -l:libraylib.a -l:libraylib.a -lm
+
+if [[ -f "./bin/$FILE" ]]; then
+    ./bin/$FILE
 fi
