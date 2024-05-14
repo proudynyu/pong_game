@@ -7,9 +7,9 @@
 
 #define WIDTH       800
 #define HEIGHT      600
-#define TITLE       "Minigame"
+#define TITLE       "Pong"
 #define FPS         60
-#define SPEED       20
+#define SPEED       10
 #define P_WIDTH     10
 #define P_HEIGHT    100
 
@@ -21,29 +21,48 @@ typedef struct {
     Color c;
 } Player;
 
-static Player *player = NULL;
+typedef struct {
+    int x; 
+    int y;
+    unsigned short int size;
+    Vector2 direction;
+} Ball;
 
-void create_player() {
+static Player *player = NULL;
+static Player *enemy = NULL;
+static Ball *ball = NULL;
+
+void characters_init() {
     player = malloc(sizeof(*player));
     assert(player != NULL);
     memset(player, 0, sizeof(*player));
 
-    player->x = 0;
-    player->y = GetScreenHeight() / 2;
-    player->w = P_WIDTH;
-    player->h = P_HEIGHT;
-    player->c = RED;
+    enemy = malloc(sizeof(*enemy));
+    assert(enemy != NULL);
+    memset(enemy, 0, sizeof(*enemy));
+
+    ball = malloc(sizeof(*ball));
+    assert(ball != NULL);
+    memset(ball, 0, sizeof(*ball));
 }
 
-void draw_player() {
-    DrawRectangle(player->x, player->y, player->w, player->h, player->c);
+void init_character(Player *p, int posX, Color color) {
+    p->x = posX;
+    p->y = GetScreenHeight() / 2 - P_HEIGHT/2;
+    p->w = P_WIDTH;
+    p->h = P_HEIGHT;
+    p->c = color;
+}
+
+void draw(Player *p) {
+    DrawRectangle(p->x, p->y, p->w, p->h, p->c);
 }
 
 void player_movement() {
-    if (IsKeyPressed(KEY_W) && player->y > 0) {
+    if (IsKeyDown(KEY_W) && player->y > 0) {
         player->y -= SPEED;
     }
-    if (IsKeyPressed(KEY_S) && player->y < HEIGHT) {
+    if (IsKeyDown(KEY_S) && player->y < HEIGHT - player->h) {
         player->y += SPEED;
     }
 }
@@ -51,30 +70,52 @@ void player_movement() {
 void draw_middle_divisor() {
     DrawRectangle(
             GetScreenWidth() / 2,
-            GetScreenHeight() / 2,
+            10,
             1,
-            HEIGHT - 10,
+            GetScreenHeight() - 20,
             WHITE
-    );
+            );
 }
 
-void update_player() {
-    draw_player();
+void score() {
+    DrawText("Score: ", 40, 10, 16, WHITE);
+}
+
+void init_ball() {
+    ball->size = 8;
+    ball->x = GetScreenWidth() / 2;
+    ball->y = GetScreenHeight() / 2;
+}
+
+void update_ball() {
+    DrawCircle(ball->x, ball->y, ball->size, YELLOW);
+}
+
+void update() {
+    draw(player);
+    draw(enemy);
     draw_middle_divisor();
     player_movement();
+
+    update_ball();
 }
 
 int main(void) {
     InitWindow(WIDTH, HEIGHT, TITLE);
     SetTargetFPS(FPS);
 
-    create_player();
+    characters_init();
+
+    init_character(player, 5, RED);
+    init_character(enemy, GetScreenWidth() - P_WIDTH - 5, GREEN);
+    init_ball();
 
     while (!WindowShouldClose()) {
         BeginDrawing();
-            ClearBackground(BLACK);
+        ClearBackground(BLACK);
 
-            update_player();
+        score();
+        update();
         EndDrawing();
     }
     CloseWindow();
