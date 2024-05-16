@@ -127,6 +127,8 @@ void draw_pause_text() {
 }
 
 void update() {
+    score();
+
     draw(player);
     draw(enemy);
     draw_ball();
@@ -148,11 +150,9 @@ int main(void) {
 
     while (!WindowShouldClose()) {
         BeginDrawing();
-        ClearBackground(BLACK);
-
-        keyboard_events();
-        score();
-        update();
+            ClearBackground(BLACK);
+            keyboard_events();
+            update();
         EndDrawing();
     }
     clear();
