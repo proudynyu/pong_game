@@ -15,18 +15,16 @@
 #define P_HEIGHT    100
 
 typedef struct {
-    int x;
-    int y;
     int w;
     int h;
+    Vector2 position;
     Color c;
 } Player;
 
 typedef struct {
-    int x; 
-    int y;
     unsigned short int size;
     Vector2 direction;
+    Vector2 position;
 } Ball;
 
 static Player *player = NULL;
@@ -34,24 +32,25 @@ static Player *enemy = NULL;
 static Ball *ball = NULL;
 bool isGamePaused = false;
 
-void init_character(Player *p, int posX, Color color) {
-    p->x = posX;
-    p->y = GetScreenHeight() / 2 - P_HEIGHT/2;
+void init_character(Player *p, float posX, Color color) {
+    int halfScreen = GetScreenHeight() / 2 - P_HEIGHT/2;
+    p->position.x = posX;
+    p->position.y = (float)halfScreen;
     p->w = P_WIDTH;
     p->h = P_HEIGHT;
     p->c = color;
 }
 
 void draw(Player *p) {
-    DrawRectangle(p->x, p->y, p->w, p->h, p->c);
+    DrawRectangle(p->position.x, p->position.y, p->w, p->h, p->c);
 }
 
 void player_movement(float dt) {
-    if (IsKeyDown(KEY_W) && player->y > 0) {
-        player->y -= SPEED * dt;
+    if (IsKeyDown(KEY_W) && player->position.y > 0) {
+        player->position.y -= SPEED * dt;
     }
-    if (IsKeyDown(KEY_S) && player->y < HEIGHT - player->h) {
-        player->y += SPEED * dt;
+    if (IsKeyDown(KEY_S) && player->position.y < HEIGHT - player->h) {
+        player->position.y += SPEED * dt;
     }
 }
 
@@ -70,37 +69,41 @@ void score() {
 }
 
 void init_ball() {
+    int halfScreenX = GetScreenWidth() / 2;
+    int halfScreenY = GetScreenHeight() / 2;
     ball->direction.x = -1;
-    ball->direction.y = 0;
+    ball->direction.y = 0.3f;
     ball->size = 8.0f;
-    ball->x = GetScreenWidth() / 2;
-    ball->y = GetScreenHeight() / 2;
+    ball->position.x = (float)halfScreenX;
+    ball->position.y = (float)halfScreenY;
 }
 
 void draw_ball() {
-    DrawCircle(ball->x, ball->y, ball->size, YELLOW);
+    DrawCircle(ball->position.x, ball->position.y, ball->size, YELLOW);
 }
 
 bool is_colliding(float dt) {
     bool collidingWithPlayer = 
-        ball->x - (int)ball->size - (SPEED * dt) <= player->x + player->w &&
-        ball->y - (int)ball->size >= player->y &&
-        ball->y + (int)ball->size <= player->y + player->h;
+        ball->position.x - (int)ball->size - (SPEED * dt) <= player->position.x + player->w &&
+        ball->position.y - (int)ball->size >= player->position.y &&
+        ball->position.y + (int)ball->size <= player->position.y + player->h;
 
     bool collidingWithEnemy = 
-        ball->x + (int)ball->size + (SPEED * dt) >= enemy->x &&
-        ball->y + (int)ball->size >= enemy->y &&
-        ball->y + (int)ball->size <= enemy->y + enemy->h;
+        ball->position.x + (int)ball->size + (SPEED * dt) >= enemy->position.x &&
+        ball->position.y + (int)ball->size >= enemy->position.y &&
+        ball->position.y + (int)ball->size <= enemy->position.y + enemy->h;
 
     if (collidingWithPlayer || collidingWithEnemy) return true;
     return false;
 }
 
 void update_ball(float dt) {
-    ball->x += ball->direction.x * (SPEED * dt);
+    ball->position.x += ball->direction.x * (SPEED * dt);
 
     bool isCollinding = is_colliding(dt);
     if (isCollinding) {
+        int middle_player_point_y = (player->position.y + player->h) / 2;
+
         ball->direction.x = (float)((int)ball->direction.x * -1);
     }
 }
@@ -163,7 +166,7 @@ int main(void) {
     init();
 
     while (!WindowShouldClose()) {
-        float dt = GetFrameTime();                                   // Get time in seconds for last frame drawn (delta time)
+        float dt = GetFrameTime();
         BeginDrawing();
             ClearBackground(BLACK);
             keyboard_events();
