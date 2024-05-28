@@ -29,11 +29,17 @@ typedef struct {
 } Ball;
 
 typedef struct {
+    int player;
+    int enemy;
+} Score;
+
+typedef struct {
     Player player;
     Player enemy;
     Ball ball;
     bool running;
     float deltaTime;
+    Score score;
 } State;
 
 static State *state = NULL;
@@ -55,6 +61,11 @@ void init_ball() {
     state->ball.size = 8;
     state->ball.velocity.x = SPEED;
     state->ball.velocity.y = SPEED;
+}
+
+void draw_score() {
+    DrawText(TextFormat("%d", state->score.player), 30, 10, 32, WHITE);
+    DrawText(TextFormat("%d", state->score.enemy), WIDTH - 30, 10, 32, WHITE);
 }
 
 void draw_player(Player *p) {
@@ -87,6 +98,8 @@ void init() {
     memset(state, 0, sizeof(*state));
 
     state->running = true;
+    state->score.player = 0;
+    state->score.enemy = 0;
 
     init_state();
 }
@@ -139,6 +152,17 @@ bool ball_collision_enemy() {
         state->ball.position.y <= state->enemy.position.y + state->enemy.h;
 }
 
+void update_score() {
+    if (state->ball.position.x - state->ball.size <= 0) {
+        state->score.enemy++;
+        init_ball();
+    }
+    if (state->ball.position.x + state->ball.size >= WIDTH) {
+        state->score.player++;
+        init_ball();
+    }
+}
+
 void update_ball() {
     state->ball.position.x += (-state->ball.velocity.x) * state->deltaTime;
     state->ball.position.y += (state->ball.velocity.y) * state->deltaTime;
@@ -157,11 +181,13 @@ void update() {
     draw_player(&state->enemy);
     draw_ball();
     draw_middle_divisor();
+    draw_score();
 
     if(!state->running) {
         draw_pause_text();
     } else {
         update_ball();
+        update_score();
     }
 }
 
