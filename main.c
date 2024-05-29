@@ -1,3 +1,10 @@
+/* 
+ * *******************************************
+ * Made by: Igor Becker - github @proudynyu
+ * Date: 29/05/24
+ * ********************************************
+ */
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
